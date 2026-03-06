@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Online Football Manager
 // @namespace    http://tampermonkey.net/
-// @version      2026-01-11
+// @version      1.0.0
 // @description  try to take over the world!
 // @author       pfazekas
 // @match        https://en.onlinefootballmanager.com/*
@@ -21,7 +21,7 @@ const YOUTH_ACADEMY =[
     '/game/stadium/youth-academy',
 ];
 const CHECK_INTERVAL_SECONDS = 30;
-const VERSION ='0.0.14';
+const VERSION ='1.0.0';
 const FANSHOP_TARGET_SLOT = 1;
 const COOLDOWN_SECONDS = 20;
 
