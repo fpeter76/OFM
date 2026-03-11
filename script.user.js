@@ -270,14 +270,18 @@ function modifyTransfer() {
 
         }, CHECK_INTERVAL_SECONDS * 1000);
     }
+    
+    if (lastPath === TACTICS_SCHOOL) {
+        setInterval(() => {
+            debug('Check TACTICS_SCHOOL...');
+            
+            checkTacticsSchoolPlayButton();
+            
+        }, CHECK_INTERVAL_SECONDS * 1000);
+    }
 
     if (lastPath === TRANSFER) {
         debug('Modify TRANSFER...');
         modifyTransfer();
-    }
-
-    if (lastPath === TACTICS_SCHOOL) {
-        debug('Modify TACTICS_SCHOOL...');
-        checkTacticsSchoolPlayButton();   
     }
 })();
