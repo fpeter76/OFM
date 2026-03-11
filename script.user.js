@@ -6,9 +6,6 @@
 // @author       pfazekas
 // @match        https://en.onlinefootballmanager.com/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
-// @grant        GM_xmlhttpRequest
-// @grant        GM_setValue
-// @grant        GM_getValue
 // @run-at       document-end
 // ==/UserScript==
 
@@ -20,8 +17,9 @@ const YOUTH_ACADEMY =[
     '/stadium/stadium-jugendakademie.php',
     '/game/stadium/youth-academy',
 ];
+const TACTICS_SCHOOL = '/stadium/stadium-taktikschule.php';
 const CHECK_INTERVAL_SECONDS = 30;
-const VERSION ='1.0.0';
+const VERSION ='1.0.1';
 const FANSHOP_TARGET_SLOT = 1;
 const COOLDOWN_SECONDS = 20;
 
@@ -142,8 +140,29 @@ function checkAcademyPlayButton() {
     const timerElement = document.getElementById('generatorCountdown');
     const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
     log(`Clicking ACADEMY video button. Time remaining: ${remainingTime}`);
+    playBtn.click();
+}
 
-    GM_setValue("lastActionTime", Date.now());
+function checkTacticsSchoolPlayButton() {
+    debug(`Check tactics school play button...`);
+
+    if (isVideoInProgress()) return;
+
+    const playBtn = document.querySelector('#play');
+    debug(JSON.stringify(playBtn, null, 2));
+
+    if (!playBtn) return;
+
+    if (playBtn.classList.contains('disabled')) return;
+
+    if (typeof playBtn.onclick !== 'function') return;
+    debug('OK');
+
+    const timerElement = document.getElementById('generatorCountdown');
+    debug(`Timer element: ${timerElement ? timerElement.innerText.trim() : 'not found'}`);
+    const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
+    debug(`Remaining time: ${remainingTime}`);
+    log(`Clicking ACADEMY video button. Time remaining: ${remainingTime}`);
     playBtn.click();
 }
 
@@ -159,8 +178,6 @@ function checkFanshopPlayButton() {
     if (playBtn && !playBtn.classList.contains('disabled')) {
         const remainingTime = timerElement ? timerElement.innerText.trim() : "time unknown";
         log(`Clicking FANSHOP slot ${FANSHOP_TARGET_SLOT}. Time remaining: ${remainingTime}`);
-        
-        GM_setValue("lastActionTime", Date.now());
         playBtn.click();
     }
 }
@@ -228,12 +245,11 @@ function modifyTransfer() {
 (function() {
     'use strict';
 
-    GM_setValue("lastActionTime", Date.now());
     let lastPath = location.pathname;
 
     debug(`lastPath: ${lastPath}`);
 
-    if (lastPath === ACADEMY || lastPath === YOUTH_ACADEMY[0] || lastPath === YOUTH_ACADEMY[0]) {
+    if (lastPath === ACADEMY || lastPath === YOUTH_ACADEMY[0]) {
         setInterval(() => {
             debug(`Check ${lastPath}...`);
 
@@ -258,5 +274,10 @@ function modifyTransfer() {
     if (lastPath === TRANSFER) {
         debug('Modify TRANSFER...');
         modifyTransfer();
+    }
+
+    if (lastPath === TACTICS_SCHOOL) {
+        debug('Modify TACTICS_SCHOOL...');
+        checkTacticsSchoolPlayButton();   
     }
 })();
