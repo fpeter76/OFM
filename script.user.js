@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Online Football Manager
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  try to take over the world!
 // @author       pfazekas
 // @match        https://en.onlinefootballmanager.com/*
