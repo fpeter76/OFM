@@ -149,13 +149,20 @@ function checkAcademyPlayButton() {
 
 function checkTacticsSchoolPlayButton() {
     debug(`Check tactics school play button...`);
+    const timerElement = document.getElementById('countdownTaktikschuleCardGenerator');
+    debug(`Timer element: ${timerElement ? timerElement.innerText.trim() : 'not found'}`);
+    const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
+    debug(`Remaining time: ${remainingTime}`);
+    log(`Clicking ACADEMY video button. Time remaining: ${remainingTime}`);
+
+
 
     if (isVideoInProgress()) return;
 
     const playBtn = document.querySelector('#play');
-    debug(playBtn.innerHTML);
 
     if (!playBtn) return;
+    debug('Play button found');
 
     if (!playBtn.classList.contains('grau')) return;
     debug('Play button is enabled');
@@ -163,11 +170,11 @@ function checkTacticsSchoolPlayButton() {
     if (typeof playBtn.onclick !== 'function') return;
     debug('Play button has onclick handler');
 
-    const timerElement = document.getElementById('countdownTaktikschuleCardGenerator');
-    debug(`Timer element: ${timerElement ? timerElement.innerText.trim() : 'not found'}`);
-    const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
-    debug(`Remaining time: ${remainingTime}`);
-    log(`Clicking ACADEMY video button. Time remaining: ${remainingTime}`);
+    // const timerElement = document.getElementById('countdownTaktikschuleCardGenerator');
+    // debug(`Timer element: ${timerElement ? timerElement.innerText.trim() : 'not found'}`);
+    // const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
+    // debug(`Remaining time: ${remainingTime}`);
+    // log(`Clicking ACADEMY video button. Time remaining: ${remainingTime}`);
     playBtn.click();
 }
 
