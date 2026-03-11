@@ -275,7 +275,7 @@ function modifyTransfer() {
         }, CHECK_INTERVAL_SECONDS * 1000);
     }
     
-    if (lastPath === TACTICS_SCHOOL[1]) {
+    if (lastPath === TACTICS_SCHOOL[0]) {
         setInterval(() => {
             debug('Check TACTICS_SCHOOL...');
             
