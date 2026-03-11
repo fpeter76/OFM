@@ -9,7 +9,7 @@
 // @run-at       document-end
 // ==/UserScript==
 
-const DEBUG_LOG = true;
+const DEBUG_LOG = false;
 const ACADEMY = '/stadium/stadium-spielerakademie.php';
 const FANSHOP = '/stadium/stadium-fanshop.php';
 const TRANSFER = '/transfer/transfermarkt.php';
@@ -158,10 +158,10 @@ function checkTacticsSchoolPlayButton() {
     debug('Play button found');
 
     if (!playBtn.classList.contains('grau')) return;
-    debug('Play button is enabled');
+    log('Play button is enabled');
 
     if (typeof playBtn.onclick !== 'function') return;
-    debug('Play button has onclick handler');
+    log('Play button has onclick handler');
 
     const timerElement = document.getElementById('countdownTaktikschuleCardGenerator');
     const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
