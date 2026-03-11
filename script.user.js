@@ -153,16 +153,18 @@ function checkTacticsSchoolPlayButton() {
     if (isVideoInProgress()) return;
 
     const playBtn = document.querySelector('#play');
-    debug(JSON.stringify(playBtn, null, 2));
+    debug(playBtn.innerHTML);
 
     if (!playBtn) return;
+    debug('Play button found');
 
     if (playBtn.classList.contains('disabled')) return;
+    debug('Play button is enabled');
 
     if (typeof playBtn.onclick !== 'function') return;
-    debug('OK');
+    debug('Play button has onclick handler');
 
-    const timerElement = document.getElementById('generatorCountdown');
+    const timerElement = document.getElementById('countdownTaktikschuleCardGenerator');
     debug(`Timer element: ${timerElement ? timerElement.innerText.trim() : 'not found'}`);
     const remainingTime = timerElement ? timerElement.innerText.trim() : "unknown time";
     debug(`Remaining time: ${remainingTime}`);
