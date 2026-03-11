@@ -13,11 +13,15 @@ const DEBUG_LOG = true;
 const ACADEMY = '/stadium/stadium-spielerakademie.php';
 const FANSHOP = '/stadium/stadium-fanshop.php';
 const TRANSFER = '/transfer/transfermarkt.php';
-const YOUTH_ACADEMY =[
+const YOUTH_ACADEMY = [
     '/stadium/stadium-jugendakademie.php',
     '/game/stadium/youth-academy',
 ];
-const TACTICS_SCHOOL = '/stadium/stadium-taktikschule.php';
+const TACTICS_SCHOOL = [
+    '/stadium/stadium-taktikschule.php',
+    '/game/stadium/tactics',
+];
+
 const CHECK_INTERVAL_SECONDS = 30;
 const VERSION ='1.0.1';
 const FANSHOP_TARGET_SLOT = 1;
@@ -271,7 +275,7 @@ function modifyTransfer() {
         }, CHECK_INTERVAL_SECONDS * 1000);
     }
     
-    if (lastPath === TACTICS_SCHOOL) {
+    if (lastPath === TACTICS_SCHOOL[1]) {
         setInterval(() => {
             debug('Check TACTICS_SCHOOL...');
             
