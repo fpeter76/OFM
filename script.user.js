@@ -157,7 +157,7 @@ function checkTacticsSchoolPlayButton() {
     if (!playBtn) return;
     debug('Play button found');
 
-    if (!playBtn.classList.contains('grau')) return;
+    if (playBtn.classList.contains('gruen')) return;
     log('Play button is enabled');
 
     if (typeof playBtn.onclick !== 'function') return;
