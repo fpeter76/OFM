@@ -156,6 +156,8 @@ function checkTacticsSchoolPlayButton() {
 
     if (!playBtn) return;
     log(`Play button classes: ${playBtn.className}`);
+    log(`Play button classes: ${playBtn.classList.names}`);
+    log(`Play button classes: ${playBtn.classList}`);
     if (playBtn.classList.contains('grau')) return;
     log('Play button is enabled');
 
