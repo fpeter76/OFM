@@ -60,6 +60,7 @@ def main() -> int:
     try:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=False)
+            interrupted = False
             try:
                 page = browser.new_page()
                 page.set_default_timeout(15_000)
@@ -87,8 +88,14 @@ def main() -> int:
                             logger.info("Login screen detected after task failure.")
                             continue
                         page.wait_for_timeout(TASK_RETRY_SECONDS * 1_000)
+            except KeyboardInterrupt:
+                interrupted = True
+                logger.info("OFM assistant stopped by user.")
             finally:
-                browser.close()
+                if not interrupted:
+                    browser.close()
+        if interrupted:
+            return 0
     except PlaywrightTimeoutError:
         logger.exception("The OFM assistant timed out outside its retry loop.")
         return 1

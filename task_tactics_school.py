@@ -13,8 +13,15 @@ TACTICS_SCHOOL_PATH = "/game/stadium/tactics"
 TACTICS_SCHOOL_URL = f"https://en.onlinefootballmanager.com{TACTICS_SCHOOL_PATH}"
 TACTICS_COUNTDOWN_SELECTOR = "#countdownTaktikschuleCardGenerator"
 TACTICS_COLLECT_SELECTOR = "#play"
+TACTICS_PICKUP_SELECTOR = "#trainingCardAbholen"
 TACTICS_PICKUP_LABEL = re.compile(r"^Pick up\s+1\s+tactic card$", re.IGNORECASE)
+TACTICS_REVEAL_SELECTOR = "#flipButton"
+TACTICS_REVEAL_LABEL = "Reveal tactic card"
+TACTICS_CLOSE_LABEL = "close"
+TACTICS_REVEAL_TIMEOUT_SECONDS = 15
 _next_collect_attempt_at = 0.0
+_tactics_card_reveal_pending = False
+_tactics_card_close_pending = False
 
 
 def _parse_countdown_seconds(text: str) -> int | None:
@@ -67,6 +74,16 @@ def _video_is_in_progress(page: Page) -> bool:
 
 def _find_pickup_control(page: Page) -> Locator | None:
     for frame in reversed(page.frames):
+        pickup_controls = frame.locator(TACTICS_PICKUP_SELECTOR)
+        for index in range(pickup_controls.count()):
+            control = pickup_controls.nth(index)
+            if (
+                control.is_visible()
+                and control.is_enabled()
+                and TACTICS_PICKUP_LABEL.fullmatch(control.inner_text().strip())
+            ):
+                return control
+
         controls = (
             frame.get_by_role("button", name=TACTICS_PICKUP_LABEL),
             frame.get_by_role("link", name=TACTICS_PICKUP_LABEL),
@@ -99,7 +116,7 @@ def _find_pickup_control(page: Page) -> Locator | None:
 def _collect_pickup_control(
     page: Page, logger: logging.Logger, control: Locator
 ) -> None:
-    global _next_collect_attempt_at
+    global _tactics_card_reveal_pending
 
     now = time.monotonic()
     if now < _next_collect_attempt_at:
@@ -107,9 +124,75 @@ def _collect_pickup_control(
 
     logger.info("Found 'Pick up 1 tactic card'; collecting it.")
     control.click()
-    _next_collect_attempt_at = time.monotonic() + 60
-    page.wait_for_timeout(1_000)
     logger.info("Clicked the Tactics school card collection control.")
+    _tactics_card_reveal_pending = True
+    _reveal_tactics_card(page, logger)
+
+
+def _reveal_tactics_card(page: Page, logger: logging.Logger) -> None:
+    global _tactics_card_reveal_pending, _tactics_card_close_pending
+
+    deadline = time.monotonic() + TACTICS_REVEAL_TIMEOUT_SECONDS
+    while True:
+        for frame in reversed(page.frames):
+            controls = frame.locator(TACTICS_REVEAL_SELECTOR)
+            for index in range(controls.count()):
+                control = controls.nth(index)
+                if (
+                    control.is_visible()
+                    and control.is_enabled()
+                    and control.inner_text().strip() == TACTICS_REVEAL_LABEL
+                ):
+                    logger.info("Revealing the tactic card.")
+                    control.click()
+                    _tactics_card_reveal_pending = False
+                    logger.info("Clicked 'Reveal tactic card'.")
+                    _tactics_card_close_pending = True
+                    _close_tactics_card(page, logger)
+                    return
+
+        remaining_seconds = deadline - time.monotonic()
+        if remaining_seconds <= 0:
+            raise RuntimeError(
+                "Picked up the tactic card, but the "
+                f"{TACTICS_REVEAL_SELECTOR} control labeled "
+                f"{TACTICS_REVEAL_LABEL!r} did not appear within "
+                f"{TACTICS_REVEAL_TIMEOUT_SECONDS} seconds."
+            )
+        page.wait_for_timeout(max(1, min(250, int(remaining_seconds * 1_000))))
+
+
+def _close_tactics_card(page: Page, logger: logging.Logger) -> None:
+    global _next_collect_attempt_at, _tactics_card_close_pending
+
+    deadline = time.monotonic() + TACTICS_REVEAL_TIMEOUT_SECONDS
+    while True:
+        for frame in reversed(page.frames):
+            controls = frame.locator(TACTICS_REVEAL_SELECTOR)
+            for index in range(controls.count()):
+                control = controls.nth(index)
+                if (
+                    control.is_visible()
+                    and control.is_enabled()
+                    and control.inner_text().strip() == TACTICS_CLOSE_LABEL
+                ):
+                    logger.info("Closing the revealed tactic card.")
+                    control.click()
+                    _tactics_card_close_pending = False
+                    _next_collect_attempt_at = time.monotonic() + 60
+                    page.wait_for_timeout(1_000)
+                    logger.info("Clicked the tactic card close control.")
+                    return
+
+        remaining_seconds = deadline - time.monotonic()
+        if remaining_seconds <= 0:
+            raise RuntimeError(
+                "Revealed the tactic card, but the "
+                f"{TACTICS_REVEAL_SELECTOR} control labeled "
+                f"{TACTICS_CLOSE_LABEL!r} did not appear within "
+                f"{TACTICS_REVEAL_TIMEOUT_SECONDS} seconds."
+            )
+        page.wait_for_timeout(max(1, min(250, int(remaining_seconds * 1_000))))
 
 
 def _open_tactics_school(page: Page, logger: logging.Logger) -> None:
@@ -155,6 +238,14 @@ def run_once(page: Page, logger: logging.Logger) -> int:
         )
         return TASK_CHECK_INTERVAL_SECONDS
 
+    if _tactics_card_reveal_pending:
+        _reveal_tactics_card(page, logger)
+        return TASK_CHECK_INTERVAL_SECONDS
+
+    if _tactics_card_close_pending:
+        _close_tactics_card(page, logger)
+        return TASK_CHECK_INTERVAL_SECONDS
+
     pickup_control = _find_pickup_control(page)
     if pickup_control is not None:
         _collect_pickup_control(page, logger, pickup_control)
@@ -165,8 +256,18 @@ def run_once(page: Page, logger: logging.Logger) -> int:
     )
     collect_frame = _visible_frame_with_selector(page, TACTICS_COLLECT_SELECTOR)
     if countdown_frame is None:
+        pickup_control = _find_pickup_control(page)
+        if pickup_control is not None:
+            logger.info(
+                "Countdown is not visible; found 'Pick up 1 tactic card'."
+            )
+            _collect_pickup_control(page, logger, pickup_control)
+            return TASK_CHECK_INTERVAL_SECONDS
+
         logger.warning(
-            "Tactics school countdown %s is not visible; checking again in %d seconds.",
+            "Tactics school countdown %s is not visible and the "
+            "'Pick up 1 tactic card' control was not found; checking again "
+            "in %d seconds.",
             TACTICS_COUNTDOWN_SELECTOR,
             TASK_CHECK_INTERVAL_SECONDS,
         )

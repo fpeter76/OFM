@@ -44,7 +44,7 @@ The scheduler logs progress to the terminal and `ofm.log` without recording
 credentials. It checks the Tactics school page every 30 seconds, using the
 countdown while the card is not ready. If the login screen appears, it logs in
 again; after a failed login it waits 10 minutes before retrying. Press Ctrl+C
-in the terminal to stop the scheduler. Set `LOG_LEVEL=DEBUG` in `.env` for more
-diagnostic messages.
+once in the terminal to stop the scheduler cleanly. Set `LOG_LEVEL=DEBUG` in
+`.env` for more diagnostic messages.
 
 Raw button
